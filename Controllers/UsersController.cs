@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Task1.Validation;
 using Task1.Models;
 
 namespace Task1.Controllers
@@ -12,9 +13,11 @@ namespace Task1.Controllers
     public class UsersController : ControllerBase
     {
         TaskContext db;
+        UserValidator userValidator;
         public UsersController(TaskContext taskContext)
         {
             db = taskContext;
+            userValidator = new UserValidator();
         }
 
         [HttpGet]
@@ -41,11 +44,11 @@ namespace Task1.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> Post(User user)
         {
-            if (user == null)
+            var userResult = userValidator.Validate(user);
+            if (user == null || !userResult.IsValid)
             {
                 return BadRequest();
             }
-
             db.Users.Add(user);
             await db.SaveChangesAsync();
             return Ok(user);
@@ -68,7 +71,8 @@ namespace Task1.Controllers
         public async Task<ActionResult<User>> Put(int id, User _user)
         {
             User user = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
-            if (user == null)
+            var userResult = userValidator.Validate(_user);
+            if (user == null || !userResult.IsValid)
             {
                 return BadRequest();
             }
