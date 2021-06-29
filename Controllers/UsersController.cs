@@ -81,18 +81,18 @@ namespace Task1.Controllers
             await db.SaveChangesAsync();
             return Ok(user);
         }
-        [HttpPut("{id}")]
-        public async Task<ActionResult<User>> Put(int id, Company company)
-        {
-            User user = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
-            if (user == null)
-            {
-                return BadRequest();
-            }
-            user.Company = company;
-            db.Users.Update(user);
-            await db.SaveChangesAsync();
-            return Ok(user);
-        }
+        //[HttpPut("{id}")]
+        //public async Task<ActionResult<User>> Put(int id, Company company)
+        //{
+        //    User user = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
+        //    if (user == null)
+        //    {
+        //        return BadRequest();
+        //    }
+        //    user.Company = company;
+        //    db.Users.Update(user);
+        //    await db.SaveChangesAsync();
+        //    return Ok(user);
+        //}
     }
 }
