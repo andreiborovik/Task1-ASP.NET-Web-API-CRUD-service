@@ -18,7 +18,7 @@ namespace Task1.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Company>().HasMany(m => m.Users).WithOne(l => l.Company).HasForeignKey(m=>m.Id);
+            modelBuilder.Entity<Company>().HasMany(m => m.Users).WithOne(l => l.Company).HasForeignKey(m => m.CompanyId);
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Task1.Models;
+using Task1.Service;
 
 namespace Task1.Controllers
 {
@@ -10,31 +10,31 @@ namespace Task1.Controllers
     [ApiController]
     public class CompaniesController : ControllerBase
     {
-        TaskContext db;
+        DatabaseService databaseService;
         public CompaniesController(TaskContext taskContext)
         {
-            db = taskContext;
+            databaseService = new DatabaseService(taskContext);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Company>>> Get()
+        public async Task<ActionResult<IEnumerable<Company>>> GetCompaniesAsync()
         {
-            return await db.Companies.ToListAsync();
+            return await databaseService.GetCompaniesAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Company>> Get(int Id)
+        public async Task<ActionResult<Company>> GetCompanyByIdAsync(int Id)
         {
-            Company company = await db.Companies.FirstOrDefaultAsync(x => x.Id == Id);
+            Company company = await databaseService.SearchCompanyAsync(Id);
             if (company == null)
                 return NotFound();
             return new ObjectResult(company);
         }
 
         [HttpGet("{id}/users")]
-        public async Task<ActionResult<IEnumerable<User>>> GetUser(int Id)
+        public async Task<ActionResult<IEnumerable<User>>> GetUsersOfCompanyAsync(int Id)
         {
-            Company company = await db.Companies.FirstOrDefaultAsync(x => x.Id == Id);
+            Company company = await databaseService.SearchCompanyAsync(Id);
             if (company == null)
             {
                 return BadRequest();
@@ -43,42 +43,38 @@ namespace Task1.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Company>> Post(Company company)
+        public async Task<ActionResult<Company>> PostCompanyAsync(Company company)
         {
             if (company == null)
             {
                 return BadRequest();
             }
-
-            db.Companies.Add(company);
-            await db.SaveChangesAsync();
+            await databaseService.AddCompanyAsync(company);
             return Ok(company);
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Company>> Delete (int Id)
+        public async Task<ActionResult<Company>> DeleteCompanyAsync(int Id)
         {
-            Company company = await db.Companies.FirstOrDefaultAsync(x => x.Id == Id);
+            Company company = await databaseService.SearchCompanyAsync(Id);
             if (company == null)
             {
                 return BadRequest();
             }
-            db.Companies.Remove(company);
-            await db.SaveChangesAsync();
+            await databaseService.DeleteCompanyAsync(company);
             return Ok(company);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Company>> Put(int id, Company company)
+        public async Task<ActionResult<Company>> UpdateCompanyAsync(int Id, Company _company)
         {
-            Company _company = await db.Companies.FirstOrDefaultAsync(x => x.Id == id);
+            Company company = await databaseService.SearchCompanyAsync(Id);
             if (company == null)
             {
                 return BadRequest();
             }
-            _company = company;
-            db.Companies.Update(_company);
-            await db.SaveChangesAsync();
+            company = _company;
+            await databaseService.UpdateCompanyASync(company);
             return Ok(_company);
         }
     }

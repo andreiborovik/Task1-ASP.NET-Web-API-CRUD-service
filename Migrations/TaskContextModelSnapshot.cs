@@ -37,7 +37,9 @@ namespace Task1.Migrations
             modelBuilder.Entity("Task1.Models.User", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("datetime2");
@@ -56,6 +58,8 @@ namespace Task1.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.ToTable("Users");
                 });
 
@@ -63,7 +67,7 @@ namespace Task1.Migrations
                 {
                     b.HasOne("Task1.Models.Company", "Company")
                         .WithMany("Users")
-                        .HasForeignKey("Id")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

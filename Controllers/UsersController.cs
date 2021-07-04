@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Task1.Validation;
 using Task1.Models;
+using Task1.Service;
 
 namespace Task1.Controllers
 {
@@ -12,87 +11,83 @@ namespace Task1.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        TaskContext db;
         UserValidator userValidator;
+        DatabaseService databaseService;
         public UsersController(TaskContext taskContext)
         {
-            db = taskContext;
             userValidator = new UserValidator();
+            databaseService = new DatabaseService(taskContext);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> Get()
+        public async Task<ActionResult<IEnumerable<User>>> GetUsersAsync()
         {
-            return await db.Users.ToListAsync();
+            return await databaseService.GetUsersAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> Get(int Id)
+        public async Task<ActionResult<User>> GetUserByIdAsync(int Id)
         {
-            User user = await db.Users.FirstOrDefaultAsync(x => x.Id == Id);
+            User user = await databaseService.SearchUserAsync(Id); ;
             if (user == null)
                 return NotFound();
             return new ObjectResult(user);
         }
 
         [HttpGet("company")]
-        public async Task<ActionResult<IEnumerable<User>>> GetCompany(Company company)
+        public async Task<ActionResult<IEnumerable<User>>> GetUserByCompanyAsync(Company company)
         {
-            return await db.Users.Where(x => x.Company == company).ToListAsync();
+            return await databaseService.GetUserByCompanyAsync(company);
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> Post(User user)
+        public async Task<ActionResult<User>> PostUserAsync(User user)
         {
             var userResult = userValidator.Validate(user);
             if (user == null || !userResult.IsValid)
             {
                 return BadRequest();
             }
-            db.Users.Add(user);
-            await db.SaveChangesAsync();
+            await databaseService.AddUserAsync(user);
             return Ok(user);
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<User>> Delete(int id)
+        public async Task<ActionResult<User>> DeleteUserAsync(int Id)
         {
-            User user = db.Users.FirstOrDefault(x => x.Id == id);
+            User user = await databaseService.SearchUserAsync(Id); ;
             if (user == null)
             {
                 return NotFound();
             }
-            db.Users.Remove(user);
-            await db.SaveChangesAsync();
+            await databaseService.DeleteUserAsync(user);
             return Ok(user);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<User>> Put(int id, User _user)
+        public async Task<ActionResult<User>> UpdateUserAsync(int Id, User _user)
         {
-            User user = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
+            User user = await databaseService.SearchUserAsync(Id);
             var userResult = userValidator.Validate(_user);
             if (user == null || !userResult.IsValid)
             {
                 return BadRequest();
             }
             user = _user;
-            db.Users.Update(user);
-            await db.SaveChangesAsync();
+            await databaseService.UpdateUserAsync(user);
             return Ok(user);
         }
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult<User>> Put(int id, Company company)
-        //{
-        //    User user = await db.Users.FirstOrDefaultAsync(x => x.Id == id);
-        //    if (user == null)
-        //    {
-        //        return BadRequest();
-        //    }
-        //    user.Company = company;
-        //    db.Users.Update(user);
-        //    await db.SaveChangesAsync();
-        //    return Ok(user);
-        //}
+        [HttpPut("{id}")]
+        public async Task<ActionResult<User>> UpdateCompanyOfUserAsync(int Id, Company company)
+        {
+            User user = await databaseService.SearchUserAsync(Id);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            user.Company = company;
+            await databaseService.UpdateUserAsync(user);
+            return Ok(user);
+        }
     }
 }

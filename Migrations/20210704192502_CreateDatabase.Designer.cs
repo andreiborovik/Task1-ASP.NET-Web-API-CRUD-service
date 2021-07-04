@@ -10,7 +10,7 @@ using Task1.Models;
 namespace Task1.Migrations
 {
     [DbContext(typeof(TaskContext))]
-    [Migration("20210619215033_CreateDatabase")]
+    [Migration("20210704192502_CreateDatabase")]
     partial class CreateDatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -39,7 +39,9 @@ namespace Task1.Migrations
             modelBuilder.Entity("Task1.Models.User", b =>
                 {
                     b.Property<int>("Id")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("datetime2");
@@ -58,6 +60,8 @@ namespace Task1.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.ToTable("Users");
                 });
 
@@ -65,7 +69,7 @@ namespace Task1.Migrations
                 {
                     b.HasOne("Task1.Models.Company", "Company")
                         .WithMany("Users")
-                        .HasForeignKey("Id")
+                        .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
