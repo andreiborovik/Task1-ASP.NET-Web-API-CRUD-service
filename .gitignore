@@ -1,0 +1,9 @@
+obj
+Properties
+Task1
+*.json
+*.sln
+*.csproj
+.vs
+bin
+README.md
