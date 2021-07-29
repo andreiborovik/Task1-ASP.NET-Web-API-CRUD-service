@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Task1.Models;
 using Task1.Service;
+using Serilog;
+using Task1.Filters;
 
 namespace Task1.Controllers
 {
+    [MyExceptionFilter]
     [Route("api/[controller]")]
     [ApiController]
     public class CompaniesController : ControllerBase
@@ -27,7 +30,9 @@ namespace Task1.Controllers
         {
             Company company = await databaseService.SearchCompanyAsync(Id);
             if (company == null)
-                return NotFound();
+            {
+                throw new System.Exception("Компания не найдена");
+            }
             return new ObjectResult(company);
         }
 
@@ -37,7 +42,7 @@ namespace Task1.Controllers
             Company company = await databaseService.SearchCompanyAsync(Id);
             if (company == null)
             {
-                return BadRequest();
+                throw new System.Exception("Компания не найдена");
             }
             return company.Users;
         }
@@ -47,7 +52,7 @@ namespace Task1.Controllers
         {
             if (company == null)
             {
-                return BadRequest();
+                throw new System.Exception("Компания не указана");
             }
             await databaseService.AddCompanyAsync(company);
             return Ok(company);
@@ -59,7 +64,7 @@ namespace Task1.Controllers
             Company company = await databaseService.SearchCompanyAsync(Id);
             if (company == null)
             {
-                return BadRequest();
+                throw new System.Exception("Компания не найдена");
             }
             await databaseService.DeleteCompanyAsync(company);
             return Ok(company);
@@ -71,10 +76,10 @@ namespace Task1.Controllers
             Company company = await databaseService.SearchCompanyAsync(Id);
             if (company == null)
             {
-                return BadRequest();
+                throw new System.Exception("Компания не найдена");
             }
             company = _company;
-            await databaseService.UpdateCompanyASync(company);
+            await databaseService.UpdateCompanyAsync(company);
             return Ok(_company);
         }
     }

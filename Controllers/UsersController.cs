@@ -4,19 +4,22 @@ using System.Threading.Tasks;
 using Task1.Validation;
 using Task1.Models;
 using Task1.Service;
+using Task1.Filters;
+using System;
 
 namespace Task1.Controllers
 {
+    [MyExceptionFilter]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
         UserValidator userValidator;
         DatabaseService databaseService;
-        public UsersController(TaskContext taskContext)
+        public UsersController(UserValidator _userValidator, DatabaseService _databaseService)
         {
-            userValidator = new UserValidator();
-            databaseService = new DatabaseService(taskContext);
+            databaseService = _databaseService;
+            userValidator = _userValidator;
         }
 
         [HttpGet]
@@ -25,19 +28,20 @@ namespace Task1.Controllers
             return await databaseService.GetUsersAsync();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<User>> GetUserByIdAsync(int Id)
         {
-            User user = await databaseService.SearchUserAsync(Id); ;
-            if (user == null)
-                return NotFound();
+            User user = await databaseService.SearchUserAsync(Id);
+            if (user == null) {
+                throw new Exception("Пользователь не найден");
+            }
             return new ObjectResult(user);
         }
 
-        [HttpGet("company")]
-        public async Task<ActionResult<IEnumerable<User>>> GetUserByCompanyAsync(Company company)
+        [HttpGet("{name}")]
+        public async Task<ActionResult<IEnumerable<User>>> GetUserByCompanyAsync(string Name)
         {
-            return await databaseService.GetUserByCompanyAsync(company);
+            return await databaseService.GetUserByCompanyAsync(Name);
         }
 
         [HttpPost]
@@ -46,7 +50,7 @@ namespace Task1.Controllers
             var userResult = userValidator.Validate(user);
             if (user == null || !userResult.IsValid)
             {
-                return BadRequest();
+                throw new Exception("Неверный ввод данных");
             }
             await databaseService.AddUserAsync(user);
             return Ok(user);
@@ -58,7 +62,7 @@ namespace Task1.Controllers
             User user = await databaseService.SearchUserAsync(Id); ;
             if (user == null)
             {
-                return NotFound();
+                throw new Exception("Пользователь не найден");
             }
             await databaseService.DeleteUserAsync(user);
             return Ok(user);
@@ -71,7 +75,7 @@ namespace Task1.Controllers
             var userResult = userValidator.Validate(_user);
             if (user == null || !userResult.IsValid)
             {
-                return BadRequest();
+                throw new Exception("Неверный ввод данных");
             }
             user = _user;
             await databaseService.UpdateUserAsync(user);
@@ -83,7 +87,7 @@ namespace Task1.Controllers
             User user = await databaseService.SearchUserAsync(Id);
             if (user == null)
             {
-                return BadRequest();
+                throw new Exception("Пользователь не найден");
             }
             user.Company = company;
             await databaseService.UpdateUserAsync(user);

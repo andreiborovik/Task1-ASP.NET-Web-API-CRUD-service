@@ -17,7 +17,7 @@ namespace Task1.Service
 
         public async Task AddUserAsync(User user)
         {
-            _db.Users.Add(user);
+            await _db.Users.AddAsync(user);
             await _db.SaveChangesAsync();
         }
 
@@ -35,17 +35,17 @@ namespace Task1.Service
 
         public async Task<User> SearchUserAsync(int id)
         {
-            return await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
+            return await _db.Users.Include(x => x.Company).FirstOrDefaultAsync(x => x.Id == id);
         }
 
         public async Task<List<User>> GetUsersAsync()
         {
-            return await _db.Users.ToListAsync();
+            return await _db.Users.Include(x => x.Company).ToListAsync();
         }
 
-        public async Task<List<User>> GetUserByCompanyAsync(Company company)
+        public async Task<List<User>> GetUserByCompanyAsync(string name)
         {
-            return await _db.Users.Where(x => x.Company == company).ToListAsync();
+            return await _db.Users.Where(x => x.Company.Name == name).ToListAsync();
         }
 
         public async Task<List<Company>> GetCompaniesAsync()
@@ -60,7 +60,7 @@ namespace Task1.Service
 
         public async Task AddCompanyAsync(Company company)
         {
-            _db.Companies.Add(company);
+            await _db.Companies.AddAsync(company);
             await _db.SaveChangesAsync();    
         }
 
@@ -70,7 +70,7 @@ namespace Task1.Service
             await _db.SaveChangesAsync();
         }
 
-        public async Task UpdateCompanyASync(Company company)
+        public async Task UpdateCompanyAsync(Company company)
         {
             _db.Companies.Update(company);
             await _db.SaveChangesAsync();
